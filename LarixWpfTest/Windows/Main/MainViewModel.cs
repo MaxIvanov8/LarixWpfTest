@@ -29,6 +29,7 @@ internal partial class MainViewModel : AbstractViewModel
 	[ObservableProperty]
 	[NotifyCanExecuteChangedFor(nameof(DeleteEmployeeCommand), nameof(OpenEditWindowCommand))]
 	private Employee? _selectedEmployee;
+	public bool HasItems => Employees.Count > 0;
 
 	private bool SelectedEmployeeNotNull => SelectedEmployee != null;
 
@@ -36,13 +37,14 @@ internal partial class MainViewModel : AbstractViewModel
 	{
 		Title = "LarixWpfTest";
 		Employees = [];
+		Employees.CollectionChanged += (sender, args) => UpdateIsEnable();
 	}
 
-	[RelayCommand]
-	private void ShowSalary() => IsSalaryShown = !IsSalaryShown;
-
-	[RelayCommand]
-	private void ShowAge() => IsAgeShown = !IsAgeShown;
+	private void UpdateIsEnable()
+	{
+		OnPropertyChanged(nameof(HasItems));
+		SaveCommand.NotifyCanExecuteChanged();
+	}
 
 	[RelayCommand]
 	public void OpenAddWindow()
@@ -68,10 +70,18 @@ internal partial class MainViewModel : AbstractViewModel
 	private void DeleteEmployee()
 	{
 		if (MyMessageBox.ShowYesNo($"Вы уверены, что хотите удалить {SelectedEmployee.NameSurname}?"))
+		{
 			Employees.Remove(SelectedEmployee);
+			if (!HasItems)
+			{
+				IsAgeShown = false;
+				IsSalaryShown = false;
+			}
+		}
 	}
 
-	[RelayCommand]
+
+	[RelayCommand(CanExecute = nameof(HasItems))]
 	private async Task Save()
 	{
 		var dialog = new SaveFileDialog { Title = Resources.Save, Filter = FileFilter, FileName = "data" };
@@ -110,8 +120,10 @@ internal partial class MainViewModel : AbstractViewModel
 		var dialog = new OpenFileDialog { Title = Resources.Download, Filter = FileFilter };
 		if (dialog.ShowDialog() == true)
 		{
+			var isSuccess = false;
 			IsProgressActive = true;
 			_cancelTokenSource = new CancellationTokenSource();
+			ObservableCollection<Employee> result = [];
 			await Task.Run(async () =>
 			{
 				try
@@ -123,11 +135,11 @@ internal partial class MainViewModel : AbstractViewModel
 						ClearProgress();
 						return;
 					}
+
 					await using var openStream = File.OpenRead(dialog.FileName);
-					Employees =
-						await JsonSerializer.DeserializeAsync<ObservableCollection<Employee>>(openStream, cancellationToken: _cancelTokenSource.Token) ??
-						throw new InvalidOperationException();
-					MyMessageBox.Show($"Данные загружены из файла {dialog.FileName}.");
+					result = JsonSerializer.Deserialize<ObservableCollection<Employee>>(openStream) ??
+					         throw new InvalidOperationException();
+					isSuccess = true;
 				}
 				catch (IOException)
 				{
@@ -146,10 +158,17 @@ internal partial class MainViewModel : AbstractViewModel
 					ClearProgress();
 				}
 			}, _cancelTokenSource.Token);
+			if (isSuccess)
+			{
+				Employees.Clear();
+				foreach (var employee in result)
+					Employees.Add(employee);
+				MyMessageBox.Show($"Данные загружены из файла {dialog.FileName}.");
+			}
 		}
 	}
 
-	[RelayCommand]
+[RelayCommand]
 	private void Cancel() => _cancelTokenSource.Cancel();
 
 	private void ClearProgress()
@@ -164,7 +183,7 @@ internal partial class MainViewModel : AbstractViewModel
 		{
 			if(token.IsCancellationRequested) return false;
 			ProgressValue++;
-			Thread.Sleep(100);
+			Thread.Sleep(50);
 		}
 		return true;
 	}

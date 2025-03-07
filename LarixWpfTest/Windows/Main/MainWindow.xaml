@@ -26,8 +26,14 @@
                 </Setter.Value>
             </Setter>
             <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{x:Static SystemColors.ControlLightBrush}"/>
+                </Trigger>
                 <Trigger Property="IsChecked" Value="True">
                     <Setter Property="Background" Value="LightGreen"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="Gray"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -40,16 +46,18 @@
         <ToolBarTray Grid.Row="0" IsEnabled="{Binding IsProgressActive, Converter={StaticResource InverseBooleanConverter}}">
             <ToolBar  >
                 <Button Content="{x:Static resx:Resources.Download}" Command="{Binding OpenCommand}"/>
-                <Button Content="{x:Static resx:Resources.Save}" Command="{Binding SaveCommand}"/>
+                <Button Content="{x:Static resx:Resources.Save}" Command="{Binding SaveCommand}"  ToolTipService.ShowOnDisabled="True"  ToolTip="Список пуст"/>
             </ToolBar>
             <ToolBar MinWidth="185">
                 <Button Content="{x:Static resx:Resources.Create}" Command="{Binding OpenAddWindowCommand}"/>
                 <Button Content="{x:Static resx:Resources.Change}" Command="{Binding OpenEditWindowCommand}"/>
                 <Button Content="Удалить" Command="{Binding DeleteEmployeeCommand}"/>
             </ToolBar>
-            <ToolBar MinWidth="210">
-                <ToggleButton Content="Показать возраст" Command="{Binding ShowAgeCommand}" Style="{StaticResource ToggleButtonStyle}"/>
-                <ToggleButton Content="Показать ЗП" Command="{Binding ShowSalaryCommand}"/>
+            <ToolBar MinWidth="210" IsEnabled="{Binding HasItems}">
+                <ToggleButton Content="Показать возраст"
+                              IsChecked="{Binding IsAgeShown}"  Style="{StaticResource ToggleButtonStyle}"/>
+                <ToggleButton Content="Показать ЗП"
+                              IsChecked="{Binding IsSalaryShown}"  Style="{StaticResource ToggleButtonStyle}"/>
             </ToolBar>
         </ToolBarTray>
         <ListBox Grid.Row="1" ItemsSource="{Binding Employees}" SelectedItem="{Binding SelectedEmployee}" HorizontalContentAlignment="Stretch" SelectionMode="Single"
