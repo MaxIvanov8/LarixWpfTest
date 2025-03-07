@@ -1,4 +1,4 @@
-# StartUpAppsViewer
+# LarixWpfTest
 This repo contains .NET project of test task on Windows Presentation Foundation(WPF) technology with using MVVM pattern. 
 
 User can:
