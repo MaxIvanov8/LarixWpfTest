@@ -9,7 +9,7 @@ User can:
 Open and save work in async mode with "hard work" function to show progress of making task. Some buttons and toggle buttons were customized. Textboxes have some rules for input.
 
 ## Stack:
-- .NET9
+- NET9
 - WPF
 - CommunityToolkit.Mvvm 8.4.0
 
