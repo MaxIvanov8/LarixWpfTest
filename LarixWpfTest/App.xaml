@@ -1,0 +1,10 @@
+﻿<Application x:Class="LarixWpfTest.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="/Windows/Main/MainWindow.xaml">
+    <Application.Resources>
+         <Style TargetType="{x:Type Window}" x:Key="WindowStyle">
+             <Setter Property="Title" Value="{Binding Title}"/>
+         </Style>
+    </Application.Resources>
+</Application>
